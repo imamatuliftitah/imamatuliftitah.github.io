@@ -155,8 +155,8 @@
 
   .phones { position: absolute; inset: 0; will-change: transform; }
   .phone {
-    position: absolute; left: 50%; top: 50%; height: 86%; aspect-ratio: 9 / 16; padding: 0; border: 0; background: none;
-    cursor: pointer; font: inherit; color: inherit; opacity: var(--o, 1); z-index: var(--z);
+    position: absolute; left: 50%; top: 50%; height: 86%; aspect-ratio: 9 / 16; pointer-events: none;
+    opacity: var(--o, 1); z-index: var(--z);
     transform: translate(calc(-50% + var(--x)), -50%) scale(var(--s)) rotate(var(--r));
     transition: transform 1.2s var(--ease-inout), opacity .7s ease;
   }
@@ -168,7 +168,7 @@
   .phone[data-slot="-2"] { --x: -132%; --s: .56; --r: -7deg;  --z: 3; --dim: .3; }
   .phone[data-slot="3"]  { --x: 170%;  --s: .42; --r: 10deg;  --z: 2; --dim: .45; }
   .phone[data-slot="-3"] { --x: -170%; --s: .42; --r: -10deg; --z: 2; --dim: .45; }
-  .phone[data-slot="hidden"] { --x: 0%; --s: .4; --r: 0deg; --z: 1; --dim: .6; --o: 0; pointer-events: none; }
+  .phone[data-slot="hidden"] { --x: 0%; --s: .4; --r: 0deg; --z: 1; --dim: .6; --o: 0; }
   .phone-float { display: block; width: 100%; height: 100%; animation: float 6.5s ease-in-out infinite alternate; }
   @keyframes float { from { transform: translateY(-2.2%) rotate(-1.2deg); } to { transform: translateY(2.2%) rotate(1.2deg); } }
   .phone .video-box {
@@ -181,9 +181,6 @@
     opacity: var(--dim, 0); transition: opacity 1.2s var(--ease-inout);
   }
   .phone .placeholder { background: var(--grad-card); color: var(--maroon); }
-  .phone .play { opacity: 0; z-index: 1; transition: opacity .5s; }
-  .phone[data-slot="0"] .play { opacity: 1; }
-  .phone:focus-visible { outline: 3px solid var(--cream-on-maroon); outline-offset: 4px; border-radius: 30px; }
   .stage.off, .stage.off * { animation-play-state: paused; }
 
   .play {
@@ -375,7 +372,7 @@
     .phone[data-slot="-1"] { --x: -62%; --s: .62; }
     .phone[data-slot="2"]  { --x: 86%;  --s: .46; }
     .phone[data-slot="-2"] { --x: -86%; --s: .46; }
-    .phone[data-slot="3"], .phone[data-slot="-3"] { --x: 0%; --s: .4; --o: 0; pointer-events: none; }
+    .phone[data-slot="3"], .phone[data-slot="-3"] { --x: 0%; --s: .4; --o: 0; }
     .phone .video-box { border-width: 4px; border-radius: 20px; }
     .phone .placeholder b { font-size: .8rem; }
     .phone .placeholder code { display: none; }
@@ -578,7 +575,7 @@
 
   // Video terbaik di panel maroon. Yang pertama berada di tengah saat halaman dibuka.
   // Terlihat maksimal 7 kotak, sisanya menunggu giliran di balik panel.
-  // Panel memutar versi ringan 12 detik pertama, video utuhnya diputar saat kotaknya diklik.
+  // Panel memutar versi ringan 12 detik pertama secara terus-menerus sebagai spoiler.
   // "cuplikan" (boleh dihapus) dipakai kalau panel harus memutar potongan khusus.
   // Kalau showreel sudah jadi: taruh di folder videos, lalu ganti baris pertama
   // menjadi judul "Showreel" dan video "videos/showreel.mp4".
@@ -764,6 +761,7 @@
     document.body.style.overflow = "hidden";
     document.getElementById("closeBtn").focus();
     modalVideo.play().catch(() => {});
+    syncStageVideos();
   }
   function closeModal() {
     modal.classList.remove("open");
@@ -773,6 +771,7 @@
     modalVideo.removeAttribute("src");
     modalVideo.load();
     if (lastFocus) lastFocus.focus({ preventScroll: true });
+    syncStageVideos();
   }
   document.getElementById("closeBtn").addEventListener("click", closeModal);
   modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
@@ -865,36 +864,35 @@
   document.getElementById("stageMarquee").innerHTML = Array(4).fill(`<span>${TEKS_PANEL}</span>`).join("");
 
   const phones = VIDEO_TERBAIK.map((k, i) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "phone";
-    btn.dataset.slot = SLOTS[i];
-    btn.setAttribute("aria-label", "Play " + k.judul);
-    btn.innerHTML = `
+    const box = document.createElement("div");
+    box.className = "phone";
+    box.dataset.slot = SLOTS[i];
+    box.setAttribute("aria-hidden", "true");
+    box.innerHTML = `
       <span class="phone-float" style="animation-duration:${5.4 + (i % 4) * 0.8}s;animation-delay:${-i * 1.1}s">
         <span class="video-box">
           <video src="${previewOf(k.cuplikan || k.video)}" poster="${thumbOf(k.cuplikan || k.video)}" muted loop playsinline preload="none"></video>
           <span class="placeholder"><span><b>${k.judul}</b><code>${k.video}</code></span></span>
-          <span class="play" aria-hidden="true">▶</span>
         </span>
       </span>`;
-    watchVideo(btn.querySelector(".video-box"));
-    btn.addEventListener("click", () => openModal(k));
-    phonesEl.appendChild(btn);
-    return btn;
+    watchVideo(box.querySelector(".video-box"));
+    phonesEl.appendChild(box);
+    return box;
   });
   const stageVideos = phones.map(p => p.querySelector("video"));
 
   let stageVisible = true, slotShift = 0;
 
-  // Di desktop tiga kotak terdepan yang diputar, di HP hanya kotak tengah
+  // Di desktop semua kotak terus berputar, di HP tiga kotak terdepan supaya tetap ringan.
+  // Saat popup terbuka atau panel tidak terlihat, semuanya berhenti sementara.
   const smallScreen = matchMedia("(max-width: 760px)");
   const saveData = navigator.connection && navigator.connection.saveData;
   function syncStageVideos() {
-    const reach = smallScreen.matches ? 0 : 1;
+    const reach = smallScreen.matches ? 1 : 3;
+    const canPlay = stageVisible && !reduceMotion && !saveData && !modal.classList.contains("open");
     stageVideos.forEach((v, i) => {
       const slot = Number(phones[i].dataset.slot);
-      if (stageVisible && !reduceMotion && !saveData && Math.abs(slot) <= reach) v.play().catch(() => {}); else v.pause();
+      if (canPlay && Math.abs(slot) <= reach) v.play().catch(() => {}); else v.pause();
     });
   }
   function rotateStage() {
