@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Imamatul Iftitah — Short Form Video Editor</title>
+<meta name="description" content="Imamatul Iftitah is a short form video editor for brands and creators: Reels, TikToks and Shorts that stop the scroll.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ====== WARNA & FONT: ganti di sini kalau mau ubah tema ====== */
+  :root {
+    --bg: #FBF0D4;          /* krem mentega */
+    --surface: #FFF9E9;     /* krem terang, kartu */
+    --ink: #2B0D12;         /* teks utama */
+    --muted: #6B5552;       /* teks pendukung */
+    --maroon: #7B1E2E;
+    --maroon-dark: #3F0A16;
+    --cream-on-maroon: #FBF0D4;
+    --line: rgba(63, 10, 22, .14);
+    --grad-maroon: linear-gradient(135deg, #A02F44 0%, #7B1E2E 42%, #3F0A16 100%);
+    --grad-text: linear-gradient(180deg, #9C2C41 8%, #5A1120 96%);
+    --grad-card: linear-gradient(160deg, #FFFCF2 0%, #FFF5DC 100%);
+    --shadow-soft: 0 18px 44px -18px rgba(63, 10, 22, .32);
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+    --ease-inout: cubic-bezier(.76, 0, .24, 1);
+    --radius: 22px;
+    --font-display: "Montserrat", system-ui, sans-serif;
+    --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.6;
+    overflow-x: clip;
+  }
+  /* Tekstur halus di seluruh halaman supaya warnanya tidak terasa datar */
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: .05;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 800; line-height: 1.04; letter-spacing: -0.03em; }
+  section[id] { scroll-margin-top: 90px; }
+
+  /* Garis progres di paling atas */
+  #progress {
+    position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 70;
+    transform: scaleX(0); transform-origin: 0 0; background: var(--grad-maroon);
+  }
+
+  /* Konten utama menutupi footer, footer terbuka saat digulir ke paling bawah */
+  main {
+    position: relative; z-index: 1;
+    background:
+      radial-gradient(1100px 700px at 88% 0, #FFFAEA 0%, rgba(255, 250, 234, 0) 62%),
+      radial-gradient(1000px 900px at 0 34%, #FFF6DE 0%, rgba(255, 246, 222, 0) 60%),
+      radial-gradient(1200px 900px at 100% 72%, #F6E2BA 0%, rgba(246, 226, 186, 0) 62%),
+      var(--bg);
+    border-radius: 0 0 44px 44px; box-shadow: 0 30px 60px rgba(63, 10, 22, .34);
+  }
+
+  /* ====== NAVBAR ====== */
+  nav { position: sticky; top: 0; z-index: 50; background: rgba(253, 244, 220, .93); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .logo { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; text-decoration: none; color: var(--maroon); }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .nav-links { display: flex; gap: 2px; list-style: none; }
+  .nav-links a { text-decoration: none; font-weight: 600; font-size: .95rem; padding: 8px 14px; border-radius: 999px; transition: background .25s; }
+  .nav-links a:hover { background: rgba(123, 30, 46, .1); }
+  .menu-btn { display: none; background: none; color: var(--maroon); border: 1.5px solid var(--maroon); border-radius: 999px; padding: 7px 14px; font: 600 .9rem var(--font-body); cursor: pointer; }
+
+  /* ====== TOMBOL ====== */
+  .btn {
+    display: inline-block; text-decoration: none; font-weight: 600; font-size: 1rem; padding: 13px 26px;
+    border-radius: 999px; border: 1.5px solid var(--maroon); position: relative; overflow: hidden;
+    transition: transform .4s var(--ease-out), box-shadow .4s var(--ease-out), color .25s;
+  }
+  .btn:hover { transform: translateY(-3px); }
+  .btn-solid {
+    background: var(--grad-maroon); color: var(--cream-on-maroon); border-color: transparent;
+    box-shadow: 0 12px 26px -12px rgba(63, 10, 22, .7);
+  }
+  .btn-solid:hover { box-shadow: 0 18px 34px -12px rgba(63, 10, 22, .8); }
+  /* Kilau yang menyapu tombol saat disentuh kursor */
+  .btn-solid::after {
+    content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; transform: skewX(-20deg);
+    background: linear-gradient(90deg, rgba(255, 249, 233, 0), rgba(255, 249, 233, .35), rgba(255, 249, 233, 0));
+    transition: left .7s var(--ease-out);
+  }
+  .btn-solid:hover::after { left: 120%; }
+  .btn-line { color: var(--maroon); }
+  .btn-line:hover { background: var(--grad-maroon); color: var(--cream-on-maroon); border-color: transparent; }
+  nav .btn { padding: 9px 20px; font-size: .92rem; }
+
+  /* ====== TEKS MAROON GRADASI + MUNCUL PER KATA ====== */
+  .gradient-text, .w > .wi {
+    background: var(--grad-text); -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+  }
+  .w { display: inline-block; overflow: hidden; vertical-align: top; padding-right: .05em; margin-right: -.05em; }
+  .wi { display: inline-block; padding-bottom: .16em; margin-bottom: -.16em; }
+  .js .split .wi { transform: translateY(118%); transition: transform 1.05s var(--ease-out); transition-delay: calc(var(--i) * 60ms); }
+  .js .split.in .wi { transform: none; }
+
+  /* ====== HERO ====== */
+  .hero { padding-top: 56px; padding-bottom: 56px; }
+  .eyebrow { font-weight: 600; color: var(--maroon); font-size: .98rem; margin-bottom: 22px; }
+  .hero h1 { font-size: clamp(2.9rem, 8.6vw, 7.4rem); }
+  .hero-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 28px; margin-top: 40px; }
+  .hero-row p { max-width: 560px; font-size: 1.15rem; color: var(--muted); }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  /* ====== VIDEO & PLACEHOLDER ====== */
+  .video-box { display: block; position: relative; overflow: hidden; background: var(--maroon-dark); }
+  .video-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .placeholder {
+    position: absolute; inset: 0; display: none; place-items: center; text-align: center;
+    padding: 12px; background: var(--grad-maroon); color: var(--cream-on-maroon); font-size: .85rem;
+  }
+  .placeholder b { display: block; font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 6px; line-height: 1.2; }
+  .placeholder code { display: block; font-size: .72rem; opacity: .8; word-break: break-all; }
+  .video-box.missing video, .video-box.missing .thumb { display: none; }
+  .video-box.missing .placeholder { display: grid; }
+
+  /* ====== PANEL MAROON + TIGA KOTAK VIDEO YANG BERGERAK ====== */
+  .stage {
+    position: relative; height: clamp(360px, 56vw, 700px); border-radius: 34px; overflow: hidden;
+    background: var(--grad-maroon); transform-origin: center top; will-change: transform;
+    box-shadow: 0 40px 70px -34px rgba(63, 10, 22, .7);
+  }
+  /* Cahaya lembut yang bergerak pelan di dalam panel */
+  .stage-glow {
+    position: absolute; width: 70%; aspect-ratio: 1; left: 15%; top: -35%; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(251, 240, 212, .3) 0%, rgba(251, 240, 212, 0) 66%);
+    animation: drift 15s ease-in-out infinite alternate;
+  }
+  @keyframes drift { from { transform: translate(-26%, 0) scale(.9); } to { transform: translate(30%, 34%) scale(1.15); } }
+  /* Tulisan besar yang berjalan di belakang video */
+  .stage-marquee {
+    position: absolute; top: 50%; left: 0; display: flex; width: max-content; margin-top: -.6em; pointer-events: none;
+    font-family: var(--font-display); font-weight: 800; font-size: clamp(4.5rem, 15vw, 13rem); line-height: 1.2; letter-spacing: -0.03em; white-space: nowrap;
+    color: transparent; -webkit-text-stroke: 1.5px rgba(251, 240, 212, .22);
+    animation: slide 46s linear infinite;
+  }
+  .stage-marquee span { padding-right: .4em; }
+  @keyframes slide { to { transform: translateX(-50%); } }
+
+  .phones { position: absolute; inset: 0; will-change: transform; }
+  .phone {
+    position: absolute; left: 50%; top: 50%; height: 86%; aspect-ratio: 9 / 16; padding: 0; border: 0; background: none;
+    cursor: pointer; font: inherit; color: inherit; opacity: var(--o, 1); z-index: var(--z);
+    transform: translate(calc(-50% + var(--x)), -50%) scale(var(--s)) rotate(var(--r));
+    transition: transform 1.2s var(--ease-inout), opacity .7s ease;
+  }
+  /* Posisi tiap kotak: 0 di tengah, angka plus ke kanan, angka minus ke kiri */
+  .phone[data-slot="0"]  { --x: 0%;    --s: 1;   --r: 0deg;   --z: 5; --dim: 0; }
+  .phone[data-slot="1"]  { --x: 80%;   --s: .74; --r: 4deg;   --z: 4; --dim: .12; }
+  .phone[data-slot="-1"] { --x: -80%;  --s: .74; --r: -4deg;  --z: 4; --dim: .12; }
+  .phone[data-slot="2"]  { --x: 132%;  --s: .56; --r: 7deg;   --z: 3; --dim: .3; }
+  .phone[data-slot="-2"] { --x: -132%; --s: .56; --r: -7deg;  --z: 3; --dim: .3; }
+  .phone[data-slot="3"]  { --x: 170%;  --s: .42; --r: 10deg;  --z: 2; --dim: .45; }
+  .phone[data-slot="-3"] { --x: -170%; --s: .42; --r: -10deg; --z: 2; --dim: .45; }
+  .phone[data-slot="hidden"] { --x: 0%; --s: .4; --r: 0deg; --z: 1; --dim: .6; --o: 0; pointer-events: none; }
+  .phone-float { display: block; width: 100%; height: 100%; animation: float 6.5s ease-in-out infinite alternate; }
+  @keyframes float { from { transform: translateY(-2.2%) rotate(-1.2deg); } to { transform: translateY(2.2%) rotate(1.2deg); } }
+  .phone .video-box {
+    width: 100%; height: 100%; border-radius: 30px; border: 7px solid #240509;
+    box-shadow: 0 30px 50px -20px rgba(20, 2, 6, .8);
+  }
+  /* Lapisan gelap supaya kotak yang jauh terlihat lebih redup */
+  .phone .video-box::after {
+    content: ""; position: absolute; inset: 0; background: #1A0307; pointer-events: none;
+    opacity: var(--dim, 0); transition: opacity 1.2s var(--ease-inout);
+  }
+  .phone .placeholder { background: var(--grad-card); color: var(--maroon); }
+  .phone .play { opacity: 0; z-index: 1; transition: opacity .5s; }
+  .phone[data-slot="0"] .play { opacity: 1; }
+  .phone:focus-visible { outline: 3px solid var(--cream-on-maroon); outline-offset: 4px; border-radius: 30px; }
+  .stage.off, .stage.off * { animation-play-state: paused; }
+
+  .play {
+    position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%;
+    background: var(--bg); color: var(--maroon); display: grid; place-items: center; font-size: 1.1rem;
+    box-shadow: 0 10px 24px -8px rgba(20, 2, 6, .6); transition: transform .4s var(--ease-out), opacity .5s;
+  }
+  .video-box.missing .play { display: none; }
+
+  /* ====== KLIEN ====== */
+  #clients { padding: 104px 0 40px; }
+  .section-title { font-size: clamp(2.3rem, 5.6vw, 4.4rem); margin-bottom: 14px; }
+  .section-sub { color: var(--muted); max-width: 600px; margin-bottom: 36px; font-size: 1.08rem; }
+  .top-clients { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .client-card {
+    display: flex; align-items: center; gap: 16px; padding: 20px; text-decoration: none; min-width: 0;
+    background: var(--grad-card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-soft);
+    transition: transform .5s var(--ease-out), box-shadow .5s var(--ease-out);
+  }
+  a.client-card:hover { transform: translateY(-5px); box-shadow: 0 26px 50px -20px rgba(63, 10, 22, .42); }
+  .avatar { flex: none; width: 68px; height: 68px; border-radius: 50%; overflow: hidden; background: var(--grad-maroon); color: var(--cream-on-maroon); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.07); }
+  .client-info { min-width: 0; flex: 1; }
+  .client-name { display: block; font-weight: 700; line-height: 1.25; }
+  .client-user { display: block; color: var(--muted); font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .client-count { flex: none; text-align: right; }
+  .client-count b { display: block; font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; line-height: 1.1; letter-spacing: -0.03em; }
+  .client-count span { font-size: .76rem; color: var(--muted); }
+  .many-more {
+    grid-column: span 2; display: grid; place-items: center; padding: 20px; text-align: center;
+    border: 1px dashed rgba(123, 30, 46, .4); border-radius: var(--radius);
+    font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; letter-spacing: -0.03em;
+  }
+
+  /* ====== KALIMAT UTAMA (muncul per kata saat digulir) ====== */
+  .statement { padding: 96px 0 110px; }
+  .statement p {
+    font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em; line-height: 1.16;
+    font-size: clamp(1.9rem, 5vw, 4.2rem); max-width: 1080px; color: var(--maroon-dark);
+  }
+  .statement .word { display: inline-block; opacity: .14; will-change: opacity; }
+
+  /* ====== KARYA ====== */
+  #work { padding: 40px 0 110px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 36px; }
+  .filter {
+    font: 600 .95rem var(--font-body); padding: 10px 20px; border-radius: 999px; cursor: pointer;
+    background: transparent; color: var(--maroon); border: 1.5px solid var(--maroon); transition: background .3s, color .3s;
+  }
+  .filter:hover { background: rgba(123, 30, 46, .1); }
+  .filter.active { background: var(--grad-maroon); color: var(--cream-on-maroon); border-color: transparent; }
+  .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; align-items: start; }
+  .card.landscape { grid-column: span 2; }
+  .card.landscape:nth-last-child(2) { grid-column: 1 / span 2; }
+  .card-play { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; border-radius: var(--radius); }
+  .card-play:focus-visible { outline: 3px solid var(--maroon); outline-offset: 4px; }
+  .card .video-box {
+    aspect-ratio: 9 / 16; border-radius: var(--radius); box-shadow: var(--shadow-soft);
+    transition: transform .6s var(--ease-out), box-shadow .6s var(--ease-out);
+  }
+  .card.landscape .video-box { aspect-ratio: 9 / 8; }
+  .card .thumb { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s var(--ease-out); }
+  .js .card:not(.in) .thumb { transform: scale(1.14); }
+  /* Cuplikan yang berputar saat kursor berada di atas kartu */
+  .card .hover-clip { position: absolute; inset: 0; opacity: 0; transition: opacity .4s; }
+  .card .hover-clip.show { opacity: 1; }
+  .card-play:hover .video-box { transform: translateY(-6px); box-shadow: 0 30px 50px -20px rgba(63, 10, 22, .5); }
+  .card-play:hover .thumb { transform: scale(1.04); }
+  .card-play:hover .play { transform: scale(1.14); }
+  .card-views {
+    position: absolute; top: 12px; left: 12px; z-index: 1; padding: 4px 11px; border-radius: 999px;
+    background: var(--bg); color: var(--maroon); font-size: .78rem; font-weight: 700; line-height: 1.4;
+  }
+  .work-note { color: var(--muted); max-width: 640px; margin-top: 44px; font-size: .98rem; }
+  .card-cat { display: block; font-size: .8rem; font-weight: 600; color: var(--maroon); margin-top: 14px; }
+  .card h3 { font-size: 1.12rem; letter-spacing: -0.02em; line-height: 1.25; margin-top: 2px; }
+  .card-client { color: var(--muted); font-size: .9rem; line-height: 1.4; margin-top: 3px; }
+  .post-link {
+    display: inline-block; margin-top: 6px; font-size: .86rem; font-weight: 600; color: var(--maroon);
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .post-link:hover { color: var(--maroon-dark); }
+
+  /* ====== TENTANG ====== */
+  #about {
+    padding: 100px 0; border-radius: 44px; border: 1px solid var(--line);
+    background: linear-gradient(150deg, #FFFCF2 0%, #FFF4D8 55%, #F8E7C2 100%);
+  }
+  .about { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; align-items: start; }
+  .photo { aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; background: var(--grad-maroon); position: relative; box-shadow: var(--shadow-soft); }
+  .photo img { width: 100%; height: 100%; object-fit: cover; object-position: center bottom; display: block; transform: translateY(4%) scale(1.04); transform-origin: center bottom; }
+  .about-lead { font-size: 1.18rem; margin-bottom: 30px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 40px; }
+  .tool { border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 16px; font-weight: 600; font-size: .9rem; }
+  .why-title { font-size: 1.5rem; margin-bottom: 6px; }
+  .why { list-style: none; }
+  .why li { padding: 16px 0; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 1.05rem; }
+
+  /* ====== TESTIMONI ====== */
+  #reviews { padding: 110px 0; }
+  .reviews { columns: 3; column-gap: 22px; }
+  .review { break-inside: avoid; padding-bottom: 34px; }
+  .translation { display: block; margin-top: 8px; font-size: .86rem; line-height: 1.4; color: var(--muted); }  .bubble {
+    position: relative; background: var(--grad-card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px 24px; font-size: 1.04rem; line-height: 1.5; box-shadow: var(--shadow-soft);
+  }
+  .bubble::after {
+    content: ""; position: absolute; left: 30px; bottom: -9px; width: 18px; height: 18px; background: #FFF6E0;
+    border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg);
+  }
+  .review figcaption { display: flex; align-items: center; gap: 12px; margin: 18px 0 0 16px; }
+  .review .avatar { width: 48px; height: 48px; }
+  .review-name { display: block; font-weight: 700; line-height: 1.25; }
+  .review-role { display: block; color: var(--muted); font-size: .86rem; }
+
+  /* ====== KONTAK ====== */
+  #contact { padding: 40px 0 130px; }
+  #contact .section-title { font-size: clamp(2.6rem, 8vw, 6.4rem); }
+  .contact-btns { display: flex; flex-wrap: wrap; gap: 12px; }
+  .back-link { margin-top: 28px; }
+
+  /* ====== FOOTER ====== */
+  footer {
+    position: sticky; bottom: 0; z-index: 0; color: var(--cream-on-maroon); padding: 90px 0 30px; overflow: hidden;
+    background: var(--grad-maroon);
+  }
+  .wordmark {
+    font-family: var(--font-display); font-weight: 800; letter-spacing: -0.045em; line-height: 1.05;
+    font-size: min(11vw, 150px); white-space: nowrap; overflow: hidden;
+  }
+  .wordmark span {
+    display: inline-block; white-space: pre;
+    background: linear-gradient(180deg, #FFF9E9, #EBCF9C); -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+  }
+  .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 34px; padding-top: 18px; border-top: 1px solid rgba(251, 240, 212, .3); font-size: .9rem; }
+
+  /* ====== ELEMEN MUNCUL SAAT DIGULIR ====== */
+  .js .reveal { opacity: 0; transform: translateY(44px); transition: opacity .9s var(--ease-out), transform 1.1s var(--ease-out); }
+  .js .reveal.in { opacity: 1; transform: none; }
+
+  /* ====== POPUP PEMUTAR VIDEO ====== */
+  .modal {
+    position: fixed; inset: 0; background: rgba(35, 6, 12, .92); z-index: 100;
+    display: none; place-items: center; padding: 20px;
+  }
+  .modal.open { display: grid; animation: fadeIn .35s ease; }
+  .modal.open .modal-inner { animation: popIn .6s var(--ease-out); }
+  @keyframes fadeIn { from { opacity: 0; } }
+  @keyframes popIn { from { transform: translateY(26px) scale(.95); opacity: 0; } }
+  .modal-inner { display: flex; flex-direction: column; align-items: center; text-align: center; color: var(--cream-on-maroon); }
+  .modal .video-box { border-radius: var(--radius); background: #000; }
+  .modal .video-box video { object-fit: contain; }
+  .modal .video-box.vertical { aspect-ratio: 9 / 16; height: min(76vh, calc((100vw - 40px) * 16 / 9)); }
+  .modal .video-box.landscape { aspect-ratio: 16 / 9; width: min(1000px, calc(100vw - 40px), calc(76vh * 16 / 9)); }
+  .modal h3 { font-size: 1.2rem; letter-spacing: -0.02em; margin-top: 12px; }
+  .modal-client { font-size: .9rem; opacity: .85; }
+  .modal .post-link { color: var(--cream-on-maroon); margin-top: 2px; }
+  .modal .post-link:hover { color: #fff; }
+  .post-link[hidden] { display: none; }
+  .close {
+    position: fixed; top: 16px; right: 16px; width: 46px; height: 46px; border-radius: 50%; border: none;
+    background: var(--bg); color: var(--maroon); font-size: 1.1rem; font-weight: 700; cursor: pointer;
+  }
+
+  /* ====== TAMPILAN TABLET & HP ====== */
+  @media (max-width: 1040px) {
+    .top-clients { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .reviews { columns: 2; }
+  }
+  @media (max-width: 960px) {
+    .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .about { grid-template-columns: 1fr; gap: 40px; }
+    .photo { max-width: 380px; }
+  }
+  @media (max-width: 760px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 16px; }
+    .menu-btn { display: block; }
+    .nav-links {
+      display: none; position: absolute; top: 72px; left: 0; right: 0; flex-direction: column;
+      background: var(--bg); padding: 10px 16px 16px; border-bottom: 1px solid var(--line);
+    }
+    .nav-links.open { display: flex; }
+    nav .btn { display: none; }
+    .hero { padding-top: 32px; padding-bottom: 40px; }
+    .stage { border-radius: 24px; }
+    .phone[data-slot="1"]  { --x: 62%;  --s: .62; }
+    .phone[data-slot="-1"] { --x: -62%; --s: .62; }
+    .phone[data-slot="2"]  { --x: 86%;  --s: .46; }
+    .phone[data-slot="-2"] { --x: -86%; --s: .46; }
+    .phone[data-slot="3"], .phone[data-slot="-3"] { --x: 0%; --s: .4; --o: 0; pointer-events: none; }
+    .phone .video-box { border-width: 4px; border-radius: 20px; }
+    .phone .placeholder b { font-size: .8rem; }
+    .phone .placeholder code { display: none; }
+    .phone[data-slot="0"] .placeholder code { display: block; font-size: .62rem; }
+    #clients { padding: 72px 0 24px; }
+    .top-clients { grid-template-columns: 1fr; }
+    .many-more { grid-column: auto; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .play { width: 46px; height: 46px; margin: -23px 0 0 -23px; }
+    .statement { padding: 64px 0 76px; }
+    #work { padding: 24px 0 76px; }
+    #about { padding: 64px 0; border-radius: 28px; }
+    #reviews { padding: 76px 0; }
+    .reviews { columns: 1; }
+    #contact { padding: 24px 0 88px; }
+    main { border-radius: 0 0 28px 28px; }
+    footer { padding-top: 60px; }
+  }
+
+  /* Untuk pengunjung yang mematikan animasi di perangkatnya */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .js .reveal, .js .split .wi { opacity: 1; transform: none; transition: none; }
+    .js .card:not(.in) .thumb { transform: none; }
+    .statement .word { opacity: 1; }
+    .stage-glow, .stage-marquee, .phone-float, .modal.open, .modal.open .modal-inner { animation: none; }
+    .phone { transition: none; }
+    #progress { display: none; }
+  }
+</style>
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+
+<div id="progress" aria-hidden="true"></div>
+
+<nav>
+  <div class="wrap">
+    <a href="#top" class="logo">Imamatul Iftitah</a>
+    <div class="nav-right">
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#work">Work</a></li>
+        <li><a href="#clients">Clients</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+      </ul>
+      <a href="#contact" class="btn btn-solid">Let's talk</a>
+      <button class="menu-btn" id="menuBtn" aria-expanded="false">Menu</button>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+
+  <!-- ====== BAGIAN PEMBUKA ====== -->
+  <header class="hero wrap">
+    <p class="eyebrow reveal">Short Form Video Editor for Brands &amp; Creators</p>
+    <h1 class="split">Short form videos that stop the scroll.</h1>
+    <div class="hero-row">
+      <p class="reveal">I'm Imamatul Iftitah, a short form video editor for brands and creators. I edit Reels, TikToks and Shorts that hold attention and get viewers to take action.</p>
+      <div class="btns reveal">
+        <a href="#work" class="btn btn-solid">See my work</a>
+        <a href="#contact" class="btn btn-line">Let's talk</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== SHOWREEL + DUA VIDEO TERBAIK, BERGERAK DI DALAM PANEL ====== -->
+  <div class="wrap" id="stageWrap">
+    <div class="stage" id="stage">
+      <div class="stage-glow" aria-hidden="true"></div>
+      <div class="stage-marquee" aria-hidden="true" id="stageMarquee"></div>
+      <div class="phones" id="phones"></div>
+    </div>
+  </div>
+
+  <!-- ====== KLIEN ====== -->
+  <section id="clients">
+    <div class="wrap">
+      <h2 class="section-title split">Creators and brands I've worked with</h2>
+      <p class="section-sub reveal">100+ videos edited, for clients local and international.</p>
+      <div class="top-clients" id="topClients"></div>
+    </div>
+  </section>
+
+  <!-- ====== KALIMAT UTAMA ====== -->
+  <section class="statement">
+    <div class="wrap">
+      <p id="statement">I turn raw footage into short form videos that stop the scroll, hold attention, and get viewers to take action.</p>
+    </div>
+  </section>
+
+  <!-- ====== KARYA ====== -->
+  <section id="work">
+    <div class="wrap">
+      <h2 class="section-title split">Recent work</h2>
+      <p class="section-sub reveal">Hooks, pacing and captions built for the feed. Pick a category, then click a video to play it.</p>
+      <div class="filters reveal" id="filters"></div>
+      <div class="grid" id="grid"></div>
+      <p class="work-note reveal">Some of my client work, including most of my talking head projects, can't be shared publicly. Happy to talk through it on a call.</p>
+    </div>
+  </section>
+
+  <!-- ====== TENTANG ====== -->
+  <section id="about">
+    <div class="wrap about">
+      <div class="photo reveal">
+        <img src="images/foto.png" alt="Imamatul Iftitah" loading="lazy">
+      </div>
+      <div>
+        <h2 class="section-title split">About me</h2>
+        <p class="about-lead reveal">I'm Imamatul Iftitah, a detail oriented video editor for talking heads, brand promos, event recaps and UGC ads. I care about one thing most: keeping people watching until the very end.</p>
+        <div class="tools reveal" id="tools"></div>
+        <h3 class="why-title reveal"><span class="gradient-text">Why clients choose me</span></h3>
+        <ul class="why" id="why"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TESTIMONI ====== -->
+  <section id="reviews">
+    <div class="wrap">
+      <h2 class="section-title split">What clients say</h2>
+      <p class="section-sub reveal">Real messages from the people I've edited for.</p>
+      <div class="reviews" id="reviewList"></div>
+    </div>
+  </section>
+
+  <!-- ====== KONTAK ====== -->
+  <section id="contact">
+    <div class="wrap">
+      <h2 class="section-title split">Have a video to edit? Let's talk.</h2>
+      <p class="section-sub reveal">Send me your clips and your goal, and let's build something great together.</p>
+      <div class="contact-btns reveal">
+        <a class="btn btn-solid" href="mailto:iimamatul@gmail.com">Email</a>
+        <a class="btn btn-line" href="https://wa.me/6285852686890" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn-line" href="https://instagram.com/immtliftth" target="_blank" rel="noopener">Instagram</a>
+        <a class="btn btn-line" href="https://www.linkedin.com/in/imamatul-iftitah" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+      <a class="btn btn-line back-link reveal" href="#work">↑ Back to my work</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="wordmark" id="wordmark" aria-label="Imamatul Iftitah">Imamatul Iftitah</div>
+    <div class="foot-row">
+      <span>© 2026 Imamatul Iftitah</span>
+      <span>Short Form Video Editor</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== POPUP PEMUTAR VIDEO ====== -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <button class="close" id="closeBtn" aria-label="Close">✕</button>
+  <div class="modal-inner">
+    <div class="video-box" id="modalBox">
+      <video id="modalVideo" controls playsinline></video>
+      <div class="placeholder"><div><b>Video not added yet</b><code id="modalPath"></code></div></div>
+    </div>
+    <h3 id="modalTitle"></h3>
+    <p class="modal-client" id="modalClient"></p>
+    <a class="post-link" id="modalLink" target="_blank" rel="noopener" hidden>View original post ↗</a>
+  </div>
+</div>
+
+<script>
+  // =====================================================================
+  //  DAFTAR KARYA: edit bagian ini untuk menambah/mengganti video kamu
+  //  - judul     : nama project
+  //  - kategori  : dipakai untuk tombol filter (kategori baru otomatis jadi tombol baru)
+  //  - klien     : username klien yang tampil di bawah video (boleh dikosongkan)
+  //  - views     : jumlah views, tampil di pojok video (boleh dihapus)
+  //  - video     : lokasi file video di folder "videos"
+  //  - format    : "vertical" (9:16) atau "landscape" (16:9)
+  // =====================================================================
+  const KARYA = [
+    { judul: "Challenge", kategori: "Creator Content", klien: "@dianitasari.n", views: "2.9M views", video: "videos/challenge-dianita.mp4", format: "vertical" },
+    { judul: "Unboxing Ciki", kategori: "UGC & Ads", klien: "@desiscathlia", views: "2.5M views", video: "videos/unboxing-ciki.mp4", format: "vertical" },
+    { judul: "Dicari Editor", kategori: "Creator Content", klien: "@crvhons", video: "videos/dicari-editor.mp4", format: "vertical" },
+    { judul: "Educational", kategori: "Creator Content", klien: "", video: "videos/educational.mp4", format: "vertical" },
+    { judul: "Video Ads Webinar", kategori: "UGC & Ads", klien: "CTS Agency", video: "videos/cts-webinar.mp4", format: "vertical" },
+    { judul: "Lasik Surgery", kategori: "Creator Content", klien: "@wolfe.ugc", video: "videos/lasik.mp4", format: "vertical" },
+    { judul: "Teh Pucuk After Event", kategori: "Brand Promo", klien: "@christine.chia", video: "videos/teh-pucuk.mp4", format: "vertical" },
+    { judul: "L'Oréal", kategori: "Brand Promo", klien: "@christine.chia", video: "videos/loreal.mp4", format: "vertical" },
+    { judul: "Parfum Qrae Eclat", kategori: "UGC & Ads", klien: "@verren.ornela", video: "videos/qrae-eclat.mp4", format: "vertical" },
+    { judul: "Imagen AI", kategori: "UGC & Ads", klien: "@wolfe.ugc", video: "videos/imagen-ai.mp4", format: "vertical" },
+    { judul: "Wahl Vacuum", kategori: "UGC & Ads", klien: "@wolfe.ugc", video: "videos/wahl-vacuum.mp4", format: "vertical" },
+    { judul: "Torabika", kategori: "Brand Promo", klien: "@desiscathlia", video: "videos/torabika.mp4", format: "vertical" },
+    { judul: "Live Shopee", kategori: "Brand Promo", klien: "@dianitasari.n", video: "videos/shopee-live.mp4", format: "vertical" },
+    { judul: "How A Live Stamping Booth Works At Your Event", kategori: "Brand Promo", klien: "@zikkyco", video: "videos/zikky-booth.mp4", format: "vertical" },
+    { judul: "Bean Boozled Challenge", kategori: "Creator Content", klien: "Diana", video: "videos/bean-boozled.mp4", format: "vertical" },
+    { judul: "Hunting Hewan Qurban", kategori: "Creator Content", klien: "@dianitasari.n", video: "videos/hewan-qurban.mp4", format: "vertical" },
+    { judul: "After Movie", kategori: "Recap & Storytelling", klien: "Indonesia Mengajar", video: "videos/indonesia-mengajar.mp4", format: "landscape" },
+    { judul: "Manggarai", kategori: "Recap & Storytelling", klien: "Personal Project", video: "videos/manggarai.mp4", format: "landscape" },
+  ];
+
+  // Video terbaik di panel maroon. Yang pertama berada di tengah saat halaman dibuka.
+  // Terlihat maksimal 7 kotak, sisanya menunggu giliran di balik panel.
+  // Panel memutar versi ringan 12 detik pertama, video utuhnya diputar saat kotaknya diklik.
+  // "cuplikan" (boleh dihapus) dipakai kalau panel harus memutar potongan khusus.
+  // Kalau showreel sudah jadi: taruh di folder videos, lalu ganti baris pertama
+  // menjadi judul "Showreel" dan video "videos/showreel.mp4".
+  const VIDEO_TERBAIK = [
+    { judul: "Motion Graphic", klien: "", video: "videos/motion-graphic.mp4", format: "vertical" },
+    { judul: "Challenge", klien: "@dianitasari.n", views: "2.9M views", video: "videos/challenge-dianita.mp4", format: "vertical" },
+    { judul: "Dicari Editor", klien: "@crvhons", video: "videos/dicari-editor.mp4", format: "vertical" },
+    { judul: "L'Oréal", klien: "@christine.chia", video: "videos/loreal.mp4", format: "vertical" },
+    { judul: "Parfum Qrae Eclat", klien: "@verren.ornela", video: "videos/qrae-eclat.mp4", format: "vertical" },
+    { judul: "Educational", klien: "", video: "videos/educational.mp4", cuplikan: "videos/educational-clip.mp4", format: "vertical" },
+    { judul: "Wahl Vacuum", klien: "@wolfe.ugc", video: "videos/wahl-vacuum.mp4", format: "vertical" },
+  ];
+
+  // Tulisan besar yang berjalan di belakang video
+  const TEKS_PANEL = "Reels • TikTok • Shorts • UGC Ads • Brand Promo •";
+
+  // Akun klien, urut dari followers terbanyak
+  const KLIEN = [
+    { nama: "cikacull", akun: "desiscathlia", platform: "TikTok", followers: "1.3M", foto: "images/clients/cikacull.jpg" },
+    { nama: "Christine Chia", akun: "christine.chia", platform: "TikTok", followers: "1.2M", foto: "images/clients/christine.jpg" },
+    { nama: "Dewa Ayu Elsa", akun: "dewayuelsa_", platform: "Instagram", followers: "177K", foto: "images/clients/dewayuelsa.jpg" },
+    { nama: "Verren Ornela", akun: "verren.ornela", platform: "Instagram", followers: "163K", foto: "images/clients/verren.jpg" },
+    { nama: "Dianita", akun: "dianitasari.n", platform: "Instagram", followers: "153K", foto: "images/clients/dianita.jpg" },
+    { nama: "Alfiah Nurul Hikmawati", akun: "avy_vhie", platform: "Instagram", followers: "127K", foto: "images/clients/avy.jpg" },
+    { nama: "Monia Hijab Kids", akun: "moniahijabkids", platform: "Instagram", followers: "95.3K", foto: "images/clients/monia.jpg" },
+    { nama: "Lisya", akun: "halolisya_", platform: "Instagram", followers: "4.7K", foto: "images/clients/halolisya.jpg" },
+    { nama: "Ashley Wolfe", akun: "wolfe.ugc", platform: "Instagram", followers: "2.7K", foto: "images/clients/wolfe.jpg" },
+    { nama: "Zikky Co.", akun: "zikkyco", platform: "Instagram", followers: "1.9K", foto: "images/clients/zikky.jpg" },
+  ];
+
+  // Tools yang kamu pakai
+  const TOOLS = ["CapCut", "Canva", "Meta Ads"];
+
+  // Alasan klien memilih kamu
+  const ALASAN = [
+    "Hooks that land in the first 3 seconds",
+    "Edits built for retention, not just looks",
+    "Fast turnaround, so you never miss a posting slot",
+    "Revisions without the drama",
+  ];
+
+  // Testimoni. "foto" berisi lokasi foto klien, kalau kosong tampil huruf depan namanya.
+  // "terjemahan" tampil kecil di bawah kutipan (boleh dihapus).
+  const TESTIMONI = [
+    { teks: "This is strong. You clearly understand pacing, flow, and how to structure a UGC-style video. The hook and ending especially stood out.", nama: "Ashley Wolfe", negara: "United States", foto: "images/clients/wolfe.jpg" },
+    { teks: "Thanks for always thinking how to improve the edit and not just following our sample blindly ya. We really like that you actually put in effort and time to think and not just do je. 😊", nama: "Malaysia company", negara: "Malaysia", foto: "images/clients/malaysia-company.jpg" },
+    { teks: "I love it. You're amazing 🫶 Thank you for following my instructions! And also adding in your own creative flair!", nama: "Zikky Co.", negara: "Singapore", foto: "images/clients/zikky.jpg" },
+    { teks: "I just want to say thank you sooooo much for always being so responsive and readily available. […] I really value the fact that when I give you a last minute deadline you don't hesitate AND the video is just as high quality edited as the others.", nama: "Ashley Wolfe", negara: "United States", foto: "images/clients/wolfe.jpg" },
+    { teks: "I really love that you noticed it and brought it to my attention. Thats the type of partner we want.", nama: "Malaysia company", negara: "Malaysia", foto: "images/clients/malaysia-company.jpg" },
+    { teks: "Hai omg okay thats like so close to what my style is 😂 Love!!", nama: "Christine Chia", negara: "Indonesia", foto: "images/clients/christine.jpg" },
+    { teks: "bagus2 kaaa aku acc kaa, aahhh langganan ini aku kak cakep bgt kwkwkw", terjemahan: "So good, I approve it. I'm definitely coming back, it looks great.", nama: "Dianita", negara: "Indonesia", foto: "images/clients/dianita.jpg" },
+    { teks: "You are good at retention skills", nama: "Ashley Wolfe", negara: "United States", foto: "images/clients/wolfe.jpg" },
+    { teks: "Ooo thats the kind of thinking skills and effort we love about you 😊", nama: "Malaysia company", negara: "Malaysia", foto: "images/clients/malaysia-company.jpg" },
+    { teks: "looks good! and clever song choice. approved, thank you tita", nama: "Zikky Co.", negara: "Singapore", foto: "images/clients/zikky.jpg" },
+    { teks: "I can send some samples, your creatives are nice", nama: "Diana", negara: "Philippines", foto: "images/clients/diana.jpg" },
+    { teks: "Terima kasih yaa Kaka hasil videonya sukaa 🥰", terjemahan: "Thank you, I love how the video turned out.", nama: "Monia Hijab Kids", negara: "Indonesia", foto: "images/clients/monia.jpg" },
+    { teks: "Thnk you titaa .. akuu sukaaa", terjemahan: "Thank you Tita, I love it.", nama: "Dewa Ayu Elsa", negara: "Indonesia", foto: "images/clients/dewayuelsa.jpg" },
+    { teks: "kakkkkkkkkk Approved 😭😭😭", nama: "cikacull", negara: "Indonesia", foto: "images/clients/cikacull.jpg" },
+  ];
+
+  // ===================== (bagian di bawah tidak perlu diubah) =====================
+
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const clamp = n => Math.min(1, Math.max(0, n));
+
+  // Thumbnail dan cuplikan ringan dibuat otomatis dari nama file video (optimize.ps1)
+  const fileName = path => path.split("/").pop().replace(".mp4", "");
+  const thumbOf = path => `images/thumbs/${fileName(path)}.jpg`;
+  const previewOf = path => `videos/preview/${fileName(path)}.mp4`;
+
+  // Tandai kotak video sebagai "missing" kalau file videonya belum ada
+  function watchVideo(box) {
+    const v = box.querySelector("video");
+    box.classList.remove("missing");
+    v.addEventListener("error", () => box.classList.add("missing"), { once: true });
+    if (v.error) box.classList.add("missing");
+  }
+
+  // Elemen yang muncul perlahan saat masuk layar
+  const observer = "IntersectionObserver" in window
+    ? new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add("in"); observer.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 })
+    : null;
+  function watchReveal(el) {
+    if (observer) observer.observe(el); else el.classList.add("in");
+  }
+  function reveal(el) {
+    el.classList.add("reveal");
+    watchReveal(el);
+  }
+
+  // Judul muncul per kata dari balik garis
+  document.querySelectorAll(".split").forEach(el => {
+    const text = el.textContent.trim();
+    el.setAttribute("aria-label", text);
+    el.innerHTML = text.split(/\s+/).map((w, i) =>
+      `<span class="w" aria-hidden="true"><span class="wi" style="--i:${i}">${w}</span></span>`).join(" ");
+    watchReveal(el);
+  });
+
+  // Foto profil atau huruf depan nama
+  function avatarHTML(foto, nama) {
+    return `<span class="avatar">${foto ? `<img src="${foto}" alt="" loading="lazy">` : nama.charAt(0).toUpperCase()}</span>`;
+  }
+
+  // Kartu akun klien
+  function profileUrl(k) {
+    if (!k.akun) return "";
+    return k.platform === "TikTok" ? `https://www.tiktok.com/@${k.akun}` : `https://www.instagram.com/${k.akun}/`;
+  }
+  function clientCard(k, i) {
+    const url = profileUrl(k);
+    const el = document.createElement(url ? "a" : "div");
+    el.className = "client-card";
+    if (url) { el.href = url; el.target = "_blank"; el.rel = "noopener"; }
+    el.innerHTML = `
+      ${avatarHTML(k.foto, k.nama)}
+      <span class="client-info">
+        <span class="client-name">${k.nama}</span>
+        <span class="client-user">${k.akun ? "@" + k.akun + " · " : ""}${k.platform}</span>
+      </span>
+      ${k.followers ? `<span class="client-count"><b class="gradient-text">${k.followers}</b><span>followers</span></span>` : ""}`;
+    el.style.transitionDelay = (i % 3) * 80 + "ms";
+    reveal(el);
+    el.addEventListener("transitionend", () => { el.style.transitionDelay = ""; }, { once: true });
+    return el;
+  }
+  const topClients = document.getElementById("topClients");
+  KLIEN.forEach((k, i) => topClients.appendChild(clientCard(k, i)));
+  const manyMore = document.createElement("div");
+  manyMore.className = "many-more";
+  manyMore.innerHTML = `<span class="gradient-text">and many more</span>`;
+  topClients.appendChild(manyMore);
+  reveal(manyMore);
+
+  // Tools, alasan, testimoni
+  document.getElementById("tools").innerHTML = TOOLS.map(t => `<span class="tool">${t}</span>`).join("");
+
+  const why = document.getElementById("why");
+  ALASAN.forEach(a => {
+    const li = document.createElement("li");
+    li.textContent = a;
+    why.appendChild(li);
+    reveal(li);
+  });
+
+  const reviewList = document.getElementById("reviewList");
+  TESTIMONI.forEach((t, i) => {
+    const fig = document.createElement("figure");
+    fig.className = "review";
+    fig.innerHTML = `
+      <blockquote class="bubble">${t.teks}${t.terjemahan ? `<span class="translation">Translation: ${t.terjemahan}</span>` : ""}</blockquote>
+      <figcaption>
+        ${avatarHTML(t.foto, t.nama)}
+        <span><span class="review-name">${t.nama}</span><span class="review-role">${t.negara}</span></span>
+      </figcaption>`;
+    fig.style.transitionDelay = (i % 3) * 90 + "ms";
+    reviewList.appendChild(fig);
+    reveal(fig);
+  });
+
+  // Popup pemutar video
+  const modal = document.getElementById("modal");
+  const modalBox = document.getElementById("modalBox");
+  const modalVideo = document.getElementById("modalVideo");
+  const modalLink = document.getElementById("modalLink");
+  let lastFocus = null;
+
+  function openModal(k) {
+    lastFocus = document.activeElement;
+    modalBox.className = "video-box " + k.format;
+    modalVideo.onerror = () => modalBox.classList.add("missing");
+    modalVideo.src = k.video;
+    document.getElementById("modalPath").textContent = k.video;
+    document.getElementById("modalTitle").textContent = k.judul;
+    document.getElementById("modalClient").textContent = [k.klien, k.views].filter(Boolean).join(" · ");
+    modalLink.hidden = !k.link;
+    if (k.link) modalLink.href = k.link;
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+    document.getElementById("closeBtn").focus();
+    modalVideo.play().catch(() => {});
+  }
+  function closeModal() {
+    modal.classList.remove("open");
+    document.body.style.overflow = "";
+    modalVideo.onerror = null;
+    modalVideo.pause();
+    modalVideo.removeAttribute("src");
+    modalVideo.load();
+    if (lastFocus) lastFocus.focus({ preventScroll: true });
+  }
+  document.getElementById("closeBtn").addEventListener("click", closeModal);
+  modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && modal.classList.contains("open")) closeModal(); });
+
+  // Galeri + filter
+  const grid = document.getElementById("grid");
+  const filters = document.getElementById("filters");
+  const kategori = ["All", ...new Set(KARYA.map(k => k.kategori))];
+  const canHover = matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  // Cuplikan baru dimuat saat kursor pertama kali berada di atas kartu
+  function addHoverClip(button, box, k) {
+    let clip = null;
+    button.addEventListener("mouseenter", () => {
+      if (!clip) {
+        clip = document.createElement("video");
+        clip.className = "hover-clip";
+        clip.muted = true;
+        clip.loop = true;
+        clip.playsInline = true;
+        clip.src = previewOf(k.video);
+        clip.addEventListener("playing", () => clip.classList.add("show"));
+        box.insertBefore(clip, box.querySelector(".placeholder"));
+      }
+      clip.play().catch(() => {});
+    });
+    button.addEventListener("mouseleave", () => {
+      if (!clip) return;
+      clip.pause();
+      clip.classList.remove("show");
+    });
+  }
+
+  function renderGrid(filter) {
+    grid.innerHTML = "";
+    KARYA.filter(k => filter === "All" || k.kategori === filter).forEach((k, i) => {
+      const card = document.createElement("article");
+      card.className = "card " + k.format;
+      card.innerHTML = `
+        <button type="button" class="card-play" aria-label="Play ${k.judul}">
+          <span class="video-box">
+            <img class="thumb" src="${thumbOf(k.video)}" alt="" loading="lazy" decoding="async">
+            <span class="placeholder"><span><b>${k.kategori}</b><code>${k.video}</code></span></span>
+            ${k.views ? `<span class="card-views">${k.views}</span>` : ""}
+            <span class="play" aria-hidden="true">▶</span>
+          </span>
+        </button>
+        <span class="card-cat">${k.kategori}</span>
+        <h3>${k.judul}</h3>
+        ${k.klien ? `<p class="card-client">${k.klien}</p>` : ""}
+        ${k.link ? `<a class="post-link" href="${k.link}" target="_blank" rel="noopener">View original post ↗</a>` : ""}`;
+      const button = card.querySelector(".card-play");
+      const box = card.querySelector(".video-box");
+      card.querySelector(".thumb").addEventListener("error", () => box.classList.add("missing"));
+      button.addEventListener("click", () => openModal(k));
+      if (canHover && !reduceMotion) addHoverClip(button, box, k);
+      card.style.transitionDelay = (i % 4) * 80 + "ms";
+      grid.appendChild(card);
+      reveal(card);
+    });
+  }
+
+  kategori.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "filter" + (i === 0 ? " active" : "");
+    b.textContent = c;
+    b.addEventListener("click", () => {
+      filters.querySelectorAll(".filter").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      renderGrid(c);
+    });
+    filters.appendChild(b);
+  });
+  renderGrid("All");
+
+  document.querySelectorAll(".reveal").forEach(watchReveal);
+
+  // Video di panel maroon: semua kotak bergeser satu posisi secara bergantian
+  const stage = document.getElementById("stage");
+  const phonesEl = document.getElementById("phones");
+  function slotOrder(n) {
+    const side = Math.min(3, Math.floor((n - 1) / 2));
+    const right = Array.from({ length: side }, (_, i) => i + 1);
+    const left = right.map(x => -x).reverse();
+    return [0, ...right, ...Array(n - 1 - side * 2).fill("hidden"), ...left];
+  }
+  const SLOTS = slotOrder(VIDEO_TERBAIK.length);
+  document.getElementById("stageMarquee").innerHTML = Array(4).fill(`<span>${TEKS_PANEL}</span>`).join("");
+
+  const phones = VIDEO_TERBAIK.map((k, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "phone";
+    btn.dataset.slot = SLOTS[i];
+    btn.setAttribute("aria-label", "Play " + k.judul);
+    btn.innerHTML = `
+      <span class="phone-float" style="animation-duration:${5.4 + (i % 4) * 0.8}s;animation-delay:${-i * 1.1}s">
+        <span class="video-box">
+          <video src="${previewOf(k.cuplikan || k.video)}" poster="${thumbOf(k.cuplikan || k.video)}" muted loop playsinline preload="none"></video>
+          <span class="placeholder"><span><b>${k.judul}</b><code>${k.video}</code></span></span>
+          <span class="play" aria-hidden="true">▶</span>
+        </span>
+      </span>`;
+    watchVideo(btn.querySelector(".video-box"));
+    btn.addEventListener("click", () => openModal(k));
+    phonesEl.appendChild(btn);
+    return btn;
+  });
+  const stageVideos = phones.map(p => p.querySelector("video"));
+
+  let stageVisible = true, slotShift = 0;
+
+  // Di desktop tiga kotak terdepan yang diputar, di HP hanya kotak tengah
+  const smallScreen = matchMedia("(max-width: 760px)");
+  const saveData = navigator.connection && navigator.connection.saveData;
+  function syncStageVideos() {
+    const reach = smallScreen.matches ? 0 : 1;
+    stageVideos.forEach((v, i) => {
+      const slot = Number(phones[i].dataset.slot);
+      if (stageVisible && !reduceMotion && !saveData && Math.abs(slot) <= reach) v.play().catch(() => {}); else v.pause();
+    });
+  }
+  function rotateStage() {
+    slotShift = (slotShift + 1) % SLOTS.length;
+    phones.forEach((p, i) => { p.dataset.slot = SLOTS[(i + slotShift) % SLOTS.length]; });
+    syncStageVideos();
+  }
+  if (!reduceMotion) {
+    setInterval(() => {
+      if (stageVisible && !document.hidden && !modal.classList.contains("open")) rotateStage();
+    }, 2800);
+  }
+
+  if (observer) {
+    new IntersectionObserver(([e]) => {
+      stageVisible = e.isIntersecting;
+      stage.classList.toggle("off", !stageVisible);
+      syncStageVideos();
+    }).observe(stage);
+  }
+
+  // Menu di HP
+  const navLinks = document.getElementById("navLinks");
+  const menuBtn = document.getElementById("menuBtn");
+  menuBtn.addEventListener("click", () => {
+    menuBtn.setAttribute("aria-expanded", navLinks.classList.toggle("open"));
+  });
+  navLinks.querySelectorAll("a").forEach(a => a.addEventListener("click", () => navLinks.classList.remove("open")));
+
+  // Gerakan yang mengikuti scroll, dibuat lentur supaya halus
+  const statement = document.getElementById("statement");
+  statement.innerHTML = statement.textContent.split(" ").map(w => `<span class="word">${w}</span>`).join(" ");
+  const words = [...statement.querySelectorAll(".word")];
+
+  const wordmark = document.getElementById("wordmark");
+  const wordmarkText = wordmark.textContent;
+  wordmark.innerHTML = [...wordmarkText].map(ch => `<span aria-hidden="true">${ch}</span>`).join("");
+  const letters = [...wordmark.children];
+
+  const stageWrap = document.getElementById("stageWrap");
+  const main = document.querySelector("main");
+  const footer = document.querySelector("footer");
+  const progress = document.getElementById("progress");
+  const current = {};
+  let running = false;
+
+  function targets() {
+    const vh = innerHeight;
+    const maxScroll = document.documentElement.scrollHeight - vh;
+    return {
+      stage: clamp((vh - stageWrap.getBoundingClientRect().top) / (vh * 0.8)),
+      words: clamp((vh * 0.85 - statement.getBoundingClientRect().top) / (vh * 0.55)),
+      foot: clamp((vh - main.getBoundingClientRect().bottom) / footer.offsetHeight),
+      progress: maxScroll > 0 ? clamp(scrollY / maxScroll) : 0,
+    };
+  }
+  function apply() {
+    stage.style.transform = `scale(${0.88 + current.stage * 0.12})`;
+    phonesEl.style.transform = `translateY(${(1 - current.stage) * 70}px)`;
+    words.forEach((el, i) => { el.style.opacity = clamp(current.words * words.length - i + 1) * 0.86 + 0.14; });
+    letters.forEach((el, i) => {
+      el.style.transform = `translateY(${(1 - clamp(current.foot * 1.5 - (i / letters.length) * 0.5)) * 110}%)`;
+    });
+    progress.style.transform = `scaleX(${current.progress})`;
+  }
+  function tick() {
+    const t = targets();
+    let moving = false;
+    for (const key in t) {
+      const diff = t[key] - current[key];
+      if (Math.abs(diff) > 0.0006) { current[key] += diff * 0.11; moving = true; } else current[key] = t[key];
+    }
+    apply();
+    if (moving) requestAnimationFrame(tick); else running = false;
+  }
+  function kick() {
+    if (!running) { running = true; requestAnimationFrame(tick); }
+  }
+  if (!reduceMotion) {
+    Object.assign(current, targets());
+    apply();
+    addEventListener("scroll", kick, { passive: true });
+    addEventListener("resize", kick);
+  }
+</script>
+</body>
+</html>
