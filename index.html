@@ -234,7 +234,6 @@
   .filter.active { background: var(--grad-maroon); color: var(--cream-on-maroon); border-color: transparent; }
   .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; align-items: start; }
   .card.landscape { grid-column: span 2; }
-  .card.landscape:nth-last-child(2) { grid-column: 1 / span 2; }
   .card-play { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; border-radius: var(--radius); }
   .card-play:focus-visible { outline: 3px solid var(--maroon); outline-offset: 4px; }
   .card .video-box {
@@ -567,7 +566,7 @@
     { judul: "Wahl Vacuum", kategori: "UGC & Ads", klien: "@wolfe.ugc", video: "videos/wahl-vacuum.mp4", format: "vertical" },
     { judul: "Challenge Sosis Kanzler", kategori: "Brand Promo", klien: "@desiscathlia", views: "90.7K views", link: "https://www.tiktok.com/@desiscathlia/video/7692004256093850900", video: "videos/sosis-kanzler.mp4", format: "vertical" },
     { judul: "Live Shopee", kategori: "Brand Promo", klien: "@dianitasari.n", views: "154K views", link: "https://www.instagram.com/reel/DZYzCNHIvks/", video: "videos/shopee-live.mp4", format: "vertical" },
-    { judul: "Wedding After Movie", kategori: "Brand Promo", klien: "@zikkyco", views: "64K views", link: "https://www.instagram.com/reel/DbVXD3gPerO/", video: "videos/zikky-wedding.mp4", format: "vertical" },
+    { judul: "Here's Why You Need A Live Stamping Bar", kategori: "Recap & Storytelling", klien: "@zikkyco", views: "64K views", link: "https://www.instagram.com/reel/DbVXD3gPerO/", video: "videos/zikky-wedding.mp4", format: "vertical" },
     { judul: "Bean Boozled Challenge", kategori: "Creator Content", klien: "Diana", video: "videos/bean-boozled.mp4", format: "vertical" },
     { judul: "Hunting Hewan Qurban", kategori: "Creator Content", klien: "@dianitasari.n", views: "146K views", link: "https://www.instagram.com/reel/DYzSrrWoiCy/", video: "videos/hewan-qurban.mp4", format: "vertical" },
     { judul: "After Movie", kategori: "Recap & Storytelling", klien: "Indonesia Mengajar", link: "https://www.instagram.com/reel/DcfvALnP4Hl/", video: "videos/indonesia-mengajar.mp4", format: "landscape" },
@@ -809,7 +808,10 @@
 
   function renderGrid(filter) {
     grid.innerHTML = "";
-    KARYA.filter(k => filter === "All" || k.kategori === filter).forEach((k, i) => {
+    const list = KARYA.filter(k => filter === "All" || k.kategori === filter);
+    // Di dalam kategori, video horizontal didahulukan supaya susunannya rapi
+    if (filter !== "All") list.sort((a, b) => (b.format === "landscape") - (a.format === "landscape"));
+    list.forEach((k, i) => {
       const card = document.createElement("article");
       card.className = "card " + k.format;
       card.innerHTML = `
