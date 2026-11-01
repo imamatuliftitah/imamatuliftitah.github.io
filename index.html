@@ -549,28 +549,29 @@
   //  - kategori  : dipakai untuk tombol filter (kategori baru otomatis jadi tombol baru)
   //  - klien     : username klien yang tampil di bawah video (boleh dikosongkan)
   //  - views     : jumlah views, tampil di pojok video (boleh dihapus)
+  //  - link      : postingan asli, memunculkan tombol "View original post" (boleh dihapus)
   //  - video     : lokasi file video di folder "videos"
   //  - format    : "vertical" (9:16) atau "landscape" (16:9)
   // =====================================================================
   const KARYA = [
-    { judul: "Challenge", kategori: "Creator Content", klien: "@dianitasari.n", views: "2.9M views", video: "videos/challenge-dianita.mp4", format: "vertical" },
-    { judul: "Unboxing Ciki", kategori: "UGC & Ads", klien: "@desiscathlia", views: "2.5M views", video: "videos/unboxing-ciki.mp4", format: "vertical" },
+    { judul: "Challenge", kategori: "Creator Content", klien: "@dianitasari.n", views: "2.9M views", link: "https://www.instagram.com/reel/DZZ7nHGILNM/", video: "videos/challenge-dianita.mp4", format: "vertical" },
+    { judul: "Unboxing Ciki", kategori: "UGC & Ads", klien: "@desiscathlia", views: "2.5M views", link: "https://www.tiktok.com/@desiscathlia/video/7586633762968964373", video: "videos/unboxing-ciki.mp4", format: "vertical" },
     { judul: "Dicari Editor", kategori: "Creator Content", klien: "@crvhons", video: "videos/dicari-editor.mp4", format: "vertical" },
     { judul: "Educational", kategori: "Creator Content", klien: "", video: "videos/educational.mp4", format: "vertical" },
     { judul: "Video Ads Webinar", kategori: "UGC & Ads", klien: "CTS Agency", video: "videos/cts-webinar.mp4", format: "vertical" },
     { judul: "Lasik Surgery", kategori: "Creator Content", klien: "@wolfe.ugc", video: "videos/lasik.mp4", format: "vertical" },
-    { judul: "Teh Pucuk After Event", kategori: "Brand Promo", klien: "@christine.chia", video: "videos/teh-pucuk.mp4", format: "vertical" },
+    { judul: "Teh Pucuk After Event", kategori: "Brand Promo", klien: "@christine.chia", views: "12K views", link: "https://www.tiktok.com/@christine.chia/video/7690171749387848980", video: "videos/teh-pucuk.mp4", format: "vertical" },
     { judul: "L'Oréal", kategori: "Brand Promo", klien: "@christine.chia", video: "videos/loreal.mp4", format: "vertical" },
-    { judul: "Parfum Qrae Eclat", kategori: "UGC & Ads", klien: "@verren.ornela", video: "videos/qrae-eclat.mp4", format: "vertical" },
+    { judul: "Parfum Qrae Eclat", kategori: "UGC & Ads", klien: "@verrenornela", views: "23.2K views", link: "https://www.tiktok.com/@verrenornela/video/7631928122643942663", video: "videos/qrae-eclat.mp4", format: "vertical" },
     { judul: "Imagen AI", kategori: "UGC & Ads", klien: "@wolfe.ugc", video: "videos/imagen-ai.mp4", format: "vertical" },
     { judul: "Wahl Vacuum", kategori: "UGC & Ads", klien: "@wolfe.ugc", video: "videos/wahl-vacuum.mp4", format: "vertical" },
-    { judul: "Torabika", kategori: "Brand Promo", klien: "@desiscathlia", video: "videos/torabika.mp4", format: "vertical" },
-    { judul: "Live Shopee", kategori: "Brand Promo", klien: "@dianitasari.n", video: "videos/shopee-live.mp4", format: "vertical" },
-    { judul: "How A Live Stamping Booth Works At Your Event", kategori: "Brand Promo", klien: "@zikkyco", video: "videos/zikky-booth.mp4", format: "vertical" },
+    { judul: "Challenge Sosis Kanzler", kategori: "Brand Promo", klien: "@desiscathlia", views: "90.7K views", link: "https://www.tiktok.com/@desiscathlia/video/7692004256093850900", video: "videos/sosis-kanzler.mp4", format: "vertical" },
+    { judul: "Live Shopee", kategori: "Brand Promo", klien: "@dianitasari.n", views: "154K views", link: "https://www.instagram.com/reel/DZYzCNHIvks/", video: "videos/shopee-live.mp4", format: "vertical" },
+    { judul: "Wedding After Movie", kategori: "Brand Promo", klien: "@zikkyco", views: "64K views", link: "https://www.instagram.com/reel/DbVXD3gPerO/", video: "videos/zikky-wedding.mp4", format: "vertical" },
     { judul: "Bean Boozled Challenge", kategori: "Creator Content", klien: "Diana", video: "videos/bean-boozled.mp4", format: "vertical" },
-    { judul: "Hunting Hewan Qurban", kategori: "Creator Content", klien: "@dianitasari.n", video: "videos/hewan-qurban.mp4", format: "vertical" },
-    { judul: "After Movie", kategori: "Recap & Storytelling", klien: "Indonesia Mengajar", video: "videos/indonesia-mengajar.mp4", format: "landscape" },
-    { judul: "Manggarai", kategori: "Recap & Storytelling", klien: "Personal Project", video: "videos/manggarai.mp4", format: "landscape" },
+    { judul: "Hunting Hewan Qurban", kategori: "Creator Content", klien: "@dianitasari.n", views: "146K views", link: "https://www.instagram.com/reel/DYzSrrWoiCy/", video: "videos/hewan-qurban.mp4", format: "vertical" },
+    { judul: "After Movie", kategori: "Recap & Storytelling", klien: "Indonesia Mengajar", link: "https://www.instagram.com/reel/DcfvALnP4Hl/", video: "videos/indonesia-mengajar.mp4", format: "landscape" },
+    { judul: "Manggarai", kategori: "Recap & Storytelling", klien: "Personal Project", views: "188K views", link: "https://www.instagram.com/reel/DV246T1kXUT/", video: "videos/manggarai.mp4", format: "landscape" },
   ];
 
   // Video terbaik di panel maroon. Yang pertama berada di tengah saat halaman dibuka.
@@ -584,7 +585,7 @@
     { judul: "Challenge", klien: "@dianitasari.n", views: "2.9M views", video: "videos/challenge-dianita.mp4", format: "vertical" },
     { judul: "Dicari Editor", klien: "@crvhons", video: "videos/dicari-editor.mp4", format: "vertical" },
     { judul: "L'Oréal", klien: "@christine.chia", video: "videos/loreal.mp4", format: "vertical" },
-    { judul: "Parfum Qrae Eclat", klien: "@verren.ornela", video: "videos/qrae-eclat.mp4", format: "vertical" },
+    { judul: "Parfum Qrae Eclat", klien: "@verrenornela", video: "videos/qrae-eclat.mp4", format: "vertical" },
     { judul: "Educational", klien: "", video: "videos/educational.mp4", cuplikan: "videos/educational-clip.mp4", format: "vertical" },
     { judul: "Wahl Vacuum", klien: "@wolfe.ugc", video: "videos/wahl-vacuum.mp4", format: "vertical" },
   ];
